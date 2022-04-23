@@ -1,6 +1,7 @@
 const { request } = require('express');
 const express = require('express');
 const morgan = require('morgan');
+const cors = require('cors');
 
 
 const app = express()
@@ -39,6 +40,7 @@ const generateId = () => {
 }
 
 /*  Middleware */
+app.use(cors())
 app.use(express.json())
 
 app.use(morgan('tiny', {
@@ -133,7 +135,9 @@ const unknownEndpoint = (request, response) => {
 
 app.use(unknownEndpoint)
 
-const PORT = 3001
-app.listen(PORT)
-console.log(`Server running on port ${PORT}`)
+const PORT = process.env.PORT || 3001
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`)
+})
+
 
