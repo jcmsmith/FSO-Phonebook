@@ -1,0 +1,50 @@
+POST http://localhost:3001/api/persons
+content-type: application/json
+
+{
+    "name": "",
+    "number": "555"
+}
+
+###
+POST http://localhost:3001/api/persons
+content-type: application/json
+
+{
+    "name": "test",
+    "number": ""
+}
+
+###
+POST http://localhost:3001/api/persons
+content-type: application/json
+
+{
+    "name": "test"
+}
+
+###
+POST http://localhost:3001/api/persons
+content-type: application/json
+
+{
+    "number": "555"
+}
+
+###
+POST http://localhost:3001/api/persons
+content-type: application/json
+
+{
+    "name": "Arto Hellas",
+    "number": "555"
+}
+
+###
+POST http://localhost:3001/api/persons
+content-type: application/json
+
+{
+    "name": "test",
+    "number": "040-123456"
+}

@@ -89,6 +89,25 @@ app.post('/api/persons', (request, response) => {
     })
   }
 
+  if (!body.number) {
+    return response.status(400).json({
+      error: 'number missing'
+    })
+  }
+
+  if (entries.find((entry) => entry.name === body.name)) {
+    return response.status(400).json({
+      error: 'name must be unique'
+    })
+  }
+
+  if (entries.find((entry) => entry.number === body.number))
+  {
+    return response.status(400).json({
+      error: 'number must be unique'
+    })
+  }
+
   console.log("adding new entry", body)
 
   const entry = {
