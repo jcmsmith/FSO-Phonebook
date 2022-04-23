@@ -27,12 +27,12 @@ let entries = [
 
 
 const generateId = () => {
-  const maxId = 
-  ( entries.length > 0 )
-  ? Math.max(...entries.map(e => e.id)) 
-  : 0
+  const min = 10
+  const max = 999999
 
-  return maxId + 1
+  const randomId = Math.floor(Math.random() * (max - min) + min)
+
+  return randomId
 }
 
 
