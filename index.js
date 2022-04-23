@@ -1,5 +1,8 @@
 const { request } = require('express');
 const express = require('express');
+const morgan = require('morgan');
+
+
 const app = express()
 
 let entries = [
@@ -35,23 +38,13 @@ const generateId = () => {
   return randomId
 }
 
-const requestLogger = (request, response, next) => {
-  console.log('Headers:', request.headers)
-  console.log('Method:', request.method)
-  console.log('Path:', request.path)
-  console.log('Body:', request.body)
-  console.log('----------')
-  next()
-}
-
 const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: 'unknown endpoint' })
 }
 
-
 /* json-parser, express middleware that takes the JSON data of request and transforms it into JS object before attaching it to request.body */
 app.use(express.json())
-app.use(requestLogger)
+app.use(morgan('tiny'))
 
 app.get('/', (request, response) => {
   response.send('<h1>Hello world!</h1>')
