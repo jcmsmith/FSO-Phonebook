@@ -1,3 +1,4 @@
+const { request } = require('express');
 const express = require('express');
 const app = express()
 
@@ -40,12 +41,24 @@ app.use(express.json())
 
 app.get('/', (request, response) => {
   console.log(request.headers)
+  console.log('getting main page')
 
   response.send('<h1>Hello world!</h1>')
 })
 
+app.get('/info', (request, response) => {
+  console.log(request.headers)
+  console.log('getting info page')
+
+  const totalEntries = `<p>Phonebook has info for ${entries.length} people</p>`
+  const res = `${totalEntries} ${new Date()}`
+
+  response.status(200).send(res)
+})
+
 app.get('/api/persons', (request, response) => {
   console.log(request.headers)
+  console.log('getting all entries')
 
   response.json(entries)
 })
@@ -94,7 +107,7 @@ app.delete('/api/persons/:id', (request, response) => {
 
   const id = Number(request.params.id)
   console.log('deleting entry', id)
-  
+
   entries = entries.filter(entry => entry.id !== id)
 
   response.status(204).end()
