@@ -38,14 +38,20 @@ const generateId = () => {
   return randomId
 }
 
-const unknownEndpoint = (request, response) => {
-  response.status(404).send({ error: 'unknown endpoint' })
-}
-
-/* json-parser, express middleware that takes the JSON data of request and transforms it into JS object before attaching it to request.body */
+/*  Middleware */
 app.use(express.json())
-app.use(morgan('tiny'))
 
+app.use(morgan('tiny', {
+  skip: (req, res) => req.method === "POST"
+}))
+
+morgan.token('postdata', (req, res) => JSON.stringify(req.body))
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :postdata', {
+  skip: (req, res) => req.method !== "POST"
+}))
+
+
+/* Routes */
 app.get('/', (request, response) => {
   response.send('<h1>Hello world!</h1>')
 })
@@ -119,6 +125,11 @@ app.delete('/api/persons/:id', (request, response) => {
 
   response.status(204).end()
 })
+
+
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: 'unknown endpoint' })
+}
 
 app.use(unknownEndpoint)
 
