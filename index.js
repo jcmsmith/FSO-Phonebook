@@ -35,21 +35,29 @@ const generateId = () => {
   return randomId
 }
 
+const requestLogger = (request, response, next) => {
+  console.log('Headers:', request.headers)
+  console.log('Method:', request.method)
+  console.log('Path:', request.path)
+  console.log('Body:', request.body)
+  console.log('----------')
+  next()
+}
+
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: 'unknown endpoint' })
+}
+
 
 /* json-parser, express middleware that takes the JSON data of request and transforms it into JS object before attaching it to request.body */
 app.use(express.json())
+app.use(requestLogger)
 
 app.get('/', (request, response) => {
-  console.log(request.headers)
-  console.log('getting main page')
-
   response.send('<h1>Hello world!</h1>')
 })
 
 app.get('/info', (request, response) => {
-  console.log(request.headers)
-  console.log('getting info page')
-
   const totalEntries = `<p>Phonebook has info for ${entries.length} people</p>`
   const res = `${totalEntries} ${new Date()}`
 
@@ -57,18 +65,12 @@ app.get('/info', (request, response) => {
 })
 
 app.get('/api/persons', (request, response) => {
-  console.log(request.headers)
-  console.log('getting all entries')
-
   response.json(entries)
 })
 
 app.get('/api/persons/:id', (request, response) => {
-  console.log(request.headers)
-
   const id = Number(request.params.id)
   const entry = entries.find(entry => entry.id === id)
-  console.log('Requesting entry', id, entry)
 
   if (entry) {
       response.json(entry)
@@ -79,8 +81,6 @@ app.get('/api/persons/:id', (request, response) => {
 })
 
 app.post('/api/persons', (request, response) => {
-  console.log(request.headers)
-
   const body = request.body
 
   if (!body.name) {
@@ -108,8 +108,6 @@ app.post('/api/persons', (request, response) => {
     })
   }
 
-  console.log("adding new entry", body)
-
   const entry = {
     "id": generateId(),
     name: body.name,
@@ -122,15 +120,14 @@ app.post('/api/persons', (request, response) => {
 })
 
 app.delete('/api/persons/:id', (request, response) => {
-  console.log(request.headers)
-
   const id = Number(request.params.id)
-  console.log('deleting entry', id)
 
   entries = entries.filter(entry => entry.id !== id)
 
   response.status(204).end()
 })
+
+app.use(unknownEndpoint)
 
 const PORT = 3001
 app.listen(PORT)

@@ -1,0 +1,15 @@
+GET http://localhost:3001/bananas
+
+###
+
+GET http://localhost:3001/api/somethingthatdoesntexist
+
+###
+
+POST http://localhost:3001/bananas
+content-type: application/json
+
+{
+    "name": "test",
+    "number": "444"
+}
