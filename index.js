@@ -27,12 +27,17 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms :p
 
 // ROUTES
 
-// Get info page (no longer working, was created for earlier exercise)
-app.get('/info', (request, response) => {
-  const totalEntries = `<p>Phonebook has info for ${entries.length} people</p>`
-  const res = `${totalEntries} ${new Date()}`
-
-  response.status(200).send(res)
+// Get info page
+app.get('/info', (request, response, next) => {
+  Entry
+    .find({})
+    .then(returnedEntries => {
+      const total = returnedEntries.length
+      const info = `<p>Phonebook has info for ${total} people</p>`
+      const result = `${info} ${new Date()}`
+      response.status(200).send(result)
+    })
+    .catch(error => next(error))
 })
 
 // Get all entries
