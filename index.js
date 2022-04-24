@@ -1,43 +1,12 @@
-const { request } = require('express');
+require('dotenv').config()
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
 
+const Entry = require('./models/entry')
 
 const app = express()
 
-let entries = [
-    { 
-      "id": 1,
-      "name": "Arto Hellas", 
-      "number": "040-123456"
-    },
-    { 
-      "id": 2,
-      "name": "Ada Lovelace", 
-      "number": "39-44-5323523"
-    },
-    { 
-      "id": 3,
-      "name": "Dan Abramov", 
-      "number": "12-43-234345"
-    },
-    { 
-      "id": 4,
-      "name": "Mary Poppendieck", 
-      "number": "39-23-6423122"
-    }
-]
-
-
-const generateId = () => {
-  const min = 10
-  const max = 999999
-
-  const randomId = Math.floor(Math.random() * (max - min) + min)
-
-  return randomId
-}
 
 /*  Middleware */
 app.use(cors())
@@ -55,10 +24,6 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms :p
 
 
 /* Routes */
-app.get('/', (request, response) => {
-  response.send('<h1>Hello world!</h1>')
-})
-
 app.get('/info', (request, response) => {
   const totalEntries = `<p>Phonebook has info for ${entries.length} people</p>`
   const res = `${totalEntries} ${new Date()}`
@@ -67,7 +32,10 @@ app.get('/info', (request, response) => {
 })
 
 app.get('/api/persons', (request, response) => {
-  response.json(entries)
+  Entry.find({}).then(returnedEntries => {
+    console.log('entries', returnedEntries)
+    response.json(returnedEntries)
+  })
 })
 
 app.get('/api/persons/:id', (request, response) => {
@@ -84,41 +52,22 @@ app.get('/api/persons/:id', (request, response) => {
 
 app.post('/api/persons', (request, response) => {
   const body = request.body
+  console.log('body', request.body)
 
-  if (!body.name) {
+  if (!body.name || !body.number) {
     return response.status(400).json({
-      error: 'name missing'
+      error: 'name or number missing'
     })
   }
 
-  if (!body.number) {
-    return response.status(400).json({
-      error: 'number missing'
-    })
-  }
-
-  if (entries.find((entry) => entry.name === body.name)) {
-    return response.status(400).json({
-      error: 'name must be unique'
-    })
-  }
-
-  if (entries.find((entry) => entry.number === body.number))
-  {
-    return response.status(400).json({
-      error: 'number must be unique'
-    })
-  }
-
-  const entry = {
-    "id": generateId(),
+  const entry = new Entry({
     name: body.name,
     number: body.number
-  }
+  })
 
-  entries = entries.concat(entry)
-  
-  response.json(entry)
+  entry.save().then(savedEntry => {
+    response.json(savedEntry)
+  })
 })
 
 app.delete('/api/persons/:id', (request, response) => {
@@ -136,7 +85,7 @@ const unknownEndpoint = (request, response) => {
 
 app.use(unknownEndpoint)
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
