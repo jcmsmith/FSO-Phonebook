@@ -8,10 +8,10 @@ const Entry = require('./models/entry')
 const app = express()
 
 
-/*  Middleware */
+//  Middleware
 app.use(cors())
-app.use(express.static('build'))
 app.use(express.json())
+app.use(express.static('build'))
 
 app.use(morgan('tiny', {
   skip: (req, res) => req.method === "POST"
@@ -23,7 +23,7 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms :p
 }))
 
 
-/* Routes */
+// Routes 
 app.get('/info', (request, response) => {
   const totalEntries = `<p>Phonebook has info for ${entries.length} people</p>`
   const res = `${totalEntries} ${new Date()}`
@@ -31,36 +31,37 @@ app.get('/info', (request, response) => {
   response.status(200).send(res)
 })
 
-app.get('/api/persons', (request, response) => {
-  Entry.find({}).then(returnedEntries => {
+app.get('/api/persons', (request, response, next) => {
+  Entry
+    .find({})
+    .then(returnedEntries => {
     console.log('entries', returnedEntries)
     response.json(returnedEntries)
   })
+    .catch(error => next(error))
 })
 
-app.get('/api/persons/:id', (request, response) => {
+app.get('/api/persons/:id', (request, response, next) => {
   const id = request.params.id
 
   Entry
-    .findOne({ id: id})
+    .findById(id)
     .then(returnedEntry => {
-      response.json(returnedEntry)
+      if (returnedEntry) {
+        response.json(returnedEntry)
+      } else {
+        response.status(404).end()
+      }
   })
-    .catch((error) => {
-      console.log('error', error)
-      response.statusMessage = `Entry with id ${id} not found!`
-      response.status(404).end()
-    })
+    .catch(error => next(error))
 })
 
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
   const body = request.body
   console.log('body', request.body)
 
   if (!body.name || !body.number) {
-    return response.status(400).json({
-      error: 'name or number missing'
-    })
+    return response.status(400).send({ error: 'name or number missing' })
   }
 
   const entry = new Entry({
@@ -68,36 +69,48 @@ app.post('/api/persons', (request, response) => {
     number: body.number
   })
 
-  entry.save().then(savedEntry => {
+  entry
+    .save()
+    .then(savedEntry => {
     response.json(savedEntry)
   })
+    .catch(error => next(error))
 })
 
-app.delete('/api/persons/:id', (request, response) => {
+app.delete('/api/persons/:id', (request, response, next) => {
   const id = request.params.id
-  console.log('attempting to delete', id)
 
-    Entry
-    .findOneAndDelete({ id: id })
-    .then(() => {
+  Entry
+    .findByIdAndRemove(id)
+    .then(result => {
       response.status(204).end()
   })
-    .catch((error) => {
-      console.log('error', error)
-      response.status(404).end()
-    })
+    .catch(error => next(error))
 })
 
 
+//Middleware - handle requests with unknown endpoint
 const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: 'unknown endpoint' })
 }
 
 app.use(unknownEndpoint)
 
+//Middleware - Log/handle error messages
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformed id' })
+  }
+
+  next(error)
+}
+
+app.use(errorHandler)
+
+
 const PORT = process.env.PORT
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
-
-
