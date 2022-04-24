@@ -39,15 +39,18 @@ app.get('/api/persons', (request, response) => {
 })
 
 app.get('/api/persons/:id', (request, response) => {
-  const id = Number(request.params.id)
-  const entry = entries.find(entry => entry.id === id)
+  const id = request.params.id
 
-  if (entry) {
-      response.json(entry)
-  } else {
+  Entry
+    .findOne({ id: id})
+    .then(returnedEntry => {
+      response.json(returnedEntry)
+  })
+    .catch((error) => {
+      console.log('error', error)
       response.statusMessage = `Entry with id ${id} not found!`
       response.status(404).end()
-  }
+    })
 })
 
 app.post('/api/persons', (request, response) => {
@@ -71,11 +74,18 @@ app.post('/api/persons', (request, response) => {
 })
 
 app.delete('/api/persons/:id', (request, response) => {
-  const id = Number(request.params.id)
+  const id = request.params.id
+  console.log('attempting to delete', id)
 
-  entries = entries.filter(entry => entry.id !== id)
-
-  response.status(204).end()
+    Entry
+    .findOneAndDelete({ id: id })
+    .then(() => {
+      response.status(204).end()
+  })
+    .catch((error) => {
+      console.log('error', error)
+      response.status(404).end()
+    })
 })
 
 
