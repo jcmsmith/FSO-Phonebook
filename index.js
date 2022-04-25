@@ -1,7 +1,7 @@
 require('dotenv').config()
-const express = require('express');
-const morgan = require('morgan');
-const cors = require('cors');
+const express = require('express')
+const morgan = require('morgan')
+const cors = require('cors')
 
 const Entry = require('./models/entry')
 
@@ -14,13 +14,13 @@ app.use(express.json())
 app.use(express.static('build'))
 
 app.use(morgan('tiny', {
-  skip: (req, res) => req.method === "POST"
+  skip: (req) => req.method === 'POST'
 }))
 
-morgan.token('postdata', (req, res) => JSON.stringify(req.body))
+morgan.token('postdata', (req) => JSON.stringify(req.body))
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :postdata', {
-  skip: (req, res) => {
-    return (req.method !== "POST" && req.method !== "PUT")
+  skip: (req) => {
+    return (req.method !== 'POST' && req.method !== 'PUT')
   }
 }))
 
@@ -45,9 +45,9 @@ app.get('/api/persons', (request, response, next) => {
   Entry
     .find({})
     .then(returnedEntries => {
-    console.log('entries', returnedEntries)
-    response.json(returnedEntries)
-  })
+      console.log('entries', returnedEntries)
+      response.json(returnedEntries)
+    })
     .catch(error => next(error))
 })
 
@@ -63,7 +63,7 @@ app.get('/api/persons/:id', (request, response, next) => {
       } else {
         response.status(404).end()
       }
-  })
+    })
     .catch(error => next(error))
 })
 
@@ -80,8 +80,8 @@ app.post('/api/persons', (request, response, next) => {
   entry
     .save()
     .then(savedEntry => {
-    response.json(savedEntry)
-  })
+      response.json(savedEntry)
+    })
     .catch(error => next(error))
 })
 
@@ -93,7 +93,7 @@ app.put('/api/persons/:id', (request, response, next) => {
 
   Entry
     .findByIdAndUpdate(
-      request.params.id, 
+      request.params.id,
       { name, number },
       { runValidators: true, context: 'query' }
     )
@@ -109,9 +109,9 @@ app.delete('/api/persons/:id', (request, response, next) => {
 
   Entry
     .findByIdAndRemove(id)
-    .then(result => {
+    .then(() => {
       response.status(204).end()
-  })
+    })
     .catch(error => next(error))
 })
 
